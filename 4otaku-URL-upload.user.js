@@ -4,7 +4,8 @@
 // @author         shtrih (akashtrih@hitagi.ru)
 // @include        http://4otaku.org/art/*
 // @match          http://4otaku.org/art/*
-// @version        1.2
+// @version        1.3
+// @history        2013.04.05 1.3  Добавлена обработка ошибок ответов, вывод текста ошибок.
 // @history        2013.04.04 1.2  Поддержка работы в Chrome c расширением Tampermonkey v2.12.3124.133, а также работа в Chrome в виде расширения (проверено в Chrome 26).
 // @history        2013.04.03 1.1  Увеличена производительность за счет замены обработчиков DOMNodeInserted и DOMNodeRemoved на MutationObserver.
 // @history        2013.04.02 1.0  Первая версия работала на Chrome с расширением Blank Canvas Script Handler v0.0.20.
