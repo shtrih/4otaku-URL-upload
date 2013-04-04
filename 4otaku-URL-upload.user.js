@@ -15,6 +15,19 @@
 function scriptBody() {
 	var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver,
 		element = $('#add_form'),
+		uploadOverlay = $('<div/>', {
+			css: {
+				position:'absolute',
+				top: '0',
+				width: '100%',
+				height: '100%',
+				background: 'rgba(230, 230, 230, 0.48) url(http://4otaku.org/images/loadingAnimation.gif) no-repeat center center',
+				margin: '-11px',
+				padding: '11px',
+				display: 'none',
+				'z-index': '1000'
+			}
+		}),
 		observer = new MutationObserver(function(mutationRecords) {
 		mutationRecords.forEach(function(mutation) {
 			if (mutation.addedNodes.length) {
@@ -30,12 +43,16 @@ function scriptBody() {
 							url:      'http://4otaku.org/api/create/art',
 							type:     'POST',
 							data:     $this.serialize() + '&format=json',
+							beforeSend: function () {
+								$('#addform', element).append(uploadOverlay.fadeIn());
+							},
 							success:  function (data) {
-								if (data.id)
+								if (data.id) 
 									document.location.href = 'http://4otaku.org/art/' + Number(data.id);
 							},
 							error:    function (jqXHR, textStatus, errorThrown) {
 								alert("Ошибка " + textStatus + ': ' + errorThrown);
+								uploadOverlay.hide();
 							},
 							dataType: 'json'
 						});
