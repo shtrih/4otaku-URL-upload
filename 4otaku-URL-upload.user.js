@@ -9,7 +9,7 @@
 // @history        2013.04.03 1.1  Увеличена производительность за счет замены обработчиков DOMNodeInserted и DOMNodeRemoved на MutationObserver.
 // @history        2013.04.02 1.0  Первая версия работала на Chrome с расширением Blank Canvas Script Handler v0.0.20.
 // ==/UserScript==
-// http://wiki.4otaku.org/Api:%D0%94%D0%BE%D0%B1%D0%B0%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5:%D0%90%D1%80%D1%82
+// http://wiki.4otaku.org/Api:Добавление:Арт
 // http://stackoverflow.com/questions/9515704/building-a-chrome-extension-inject-code-in-a-page-using-a-content-script/9517879#9517879
 
 function scriptBody() {
@@ -28,6 +28,21 @@ function scriptBody() {
 				'z-index': '1000'
 			}
 		}),
+		// http://wiki.4otaku.org/Api:Коды_ошибок
+		error_messages = {
+			5:   'Файл не был получен.',
+			10:  'Файл слишком большой.',
+			20:  'Файл не является картинкой.',
+			//30:  'Такой материал уже существует.', // игнорируем
+			60:  'Тег не удалось найти в базе данных, ни поискав по алиасам, ни поискав по именам, ни поискав по вариантам. Новый тег был создан. Обычно эта ошибка не обозначает провал всего действия.',
+			150: 'Сервер не имеет возможности обработать анимированные картинки (по идее, на 4otaku.org вы никогда не должны увидеть такой ошибки, если это случилось сообщите разработчику).',
+			180: 'Произошел программный сбой при обработке картинки (по идее, на 4otaku.org вы никогда не должны увидеть такой ошибки, если это случилось сообщите разработчику).',
+			//200: 'Файл не является торрент-файлом.', // это не про нас
+			260: 'Битая картинка.',
+			410: 'Не удалось скачать файл с предложенной ссылки.',
+			420: 'Неполные данные запроса, пропущены основные поля.',
+			430: 'Некорректные данные запроса.'
+		},
 		observer = new MutationObserver(function(mutationRecords) {
 		mutationRecords.forEach(function(mutation) {
 			if (mutation.addedNodes.length) {
@@ -36,7 +51,8 @@ function scriptBody() {
 				);
 
 				$('.art_body').delegate('#addform', 'submit', function (event) {
-					var $this = $(event.target);
+					var $this = $(event.target),
+						error_div = $('#error', element);
 
 					if ($this.find('input[name="image"]').val()) {
 						$.ajax({
@@ -44,11 +60,23 @@ function scriptBody() {
 							type:     'POST',
 							data:     $this.serialize() + '&format=json',
 							beforeSend: function () {
-								$('#addform', element).append(uploadOverlay.fadeIn());
+								$('#addform', element).css('position', 'relative').append(uploadOverlay.fadeIn());
 							},
 							success:  function (data) {
-								if (data.id) 
+								if (data.id) {
 									document.location.href = 'http://4otaku.org/art/' + Number(data.id);
+								}
+								else {
+									error_div.html('');
+									for (var i = 0, len = data.errors.length; i < len; i++) {
+										error_div.append(
+											$('<div/>', {
+												text: error_messages[data.errors[i].code]
+											})
+										);
+									}
+									uploadOverlay.hide();
+								}
 							},
 							error:    function (jqXHR, textStatus, errorThrown) {
 								alert("Ошибка " + textStatus + ': ' + errorThrown);
